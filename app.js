@@ -3,6 +3,25 @@ const app = express();
 const path = require('path')
 const nunjucks = require('nunjucks')
 const pageRoute = require('./routes/page')
+const { sequelize } = require('./models'); // 모델 불러오기(데이터 베이스 조작)
+const session = require('express-session') // 세션
+
+sequelize.sync({ force : false }).then(() => { // 이곳은 최초 1회, 매번 요청마다는 x
+    console.log('데이터베이스 연결 성공')
+}).catch((err) => {
+    console.error(err);
+})
+
+
+app.use(session({ // 미들웨어 방식으로 실행
+        resave : true,
+        saveUninitialized : true,
+        secret : 'namjung',
+        cookie : {
+                httpOnly : true,
+        },
+        name : 'connect.sid' // 쿠키로 저자될 세션 이름
+}))
 
 app.set('port', process.env.PORT || 8082);
 
@@ -17,13 +36,21 @@ nunjucks.configure('views', {
   });
 // ------------
 
+
 app.use('/', pageRoute)
 // console.log(pageRoute)
 
-app.use((err, req, res, next) =>{ // 에러처리 미들웨어
+app.use((req, res, next) =>{ // 에러처리 미들웨어
     res.status(404).send("Error 404")
     console.log(err)
 })
+// app.use((err, req,res, next) => {
+//     res.locals.message = err.message;
+//     res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
+//     res.status(err.status || 500);
+//     console.log(err.status)
+//     res.render('error')
+// })
 
 app.listen(app.get('port'), () => {
     console.log("서버 작동 시작")
