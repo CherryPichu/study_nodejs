@@ -7,7 +7,9 @@ const authRoute = require('./routes/auth')
 const { sequelize } = require('./models'); // 모델 불러오기(데이터 베이스 조작)
 const session = require('express-session') // 세션
 
-sequelize.sync({ force : false }).then(() => { // 이곳은 최초 1회, 매번 요청마다는 x
+
+
+sequelize.sync({ force : false }).then(() => { // force : true , table 정보가 바뀌면 강제로 삭제뒤 재생성
     console.log('데이터베이스 연결 성공')
 }).catch((err) => {
     console.error(err);
@@ -38,6 +40,7 @@ nunjucks.configure('views', {
 // ---- route 정보------------
 
 app.use('/auth', authRoute)
+
 app.use('/', pageRoute)
 // console.log(pageRoute)
 

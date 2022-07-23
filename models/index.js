@@ -1,8 +1,9 @@
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
+const User = require('./user')
+const Post = require('./post');
+const Hashtag = require('./hashtag');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
@@ -36,10 +37,20 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+db.Hashtag = Hashtag
+db.Post = Post
+db.User = User
 
-const page = require('./page')
-db.page = page
-page.init(sequelize)
-page.associate(db);
+User.init(sequelize)
+Post.init(sequelize);
+Hashtag.init(sequelize);
+
+User.associate(db);
+Post.associate(db);
+Hashtag.associate(db);
+
+
+
+
 
 module.exports = db;

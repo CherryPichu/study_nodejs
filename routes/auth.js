@@ -8,7 +8,7 @@ const app = express(); // app.get 사용
 const router = express.Router();
 const fs = require('fs')
 const path = require('path');
-const { page } = require('../models'); // db 객체 안에 page 반환, 구조분해
+const { User } = require('../models'); // db 객체 안에 page 반환, 구조분해
 
 router.use(cookieParser())
 router.use(bodyParser.json()); // json 등록
@@ -18,11 +18,11 @@ router.post('/login', async (req, res) => { // 로그인 시도
     const email = req.body.email
     const password = req.body.password
     if(req.session.user && req.session){
-            
+            res.send('<script>alert("이미 로그인된 회원입니다."); window.location.href = "/"</script>')
     }else{
             const { Op } = require('sequelize')
             try {
-                    const ExecuteQuery = await page.findOne(({ // 이메일과 패스워드가 일치한게 있는지 찾기
+                    const ExecuteQuery = await User.findOne(({ // 이메일과 패스워드가 일치한게 있는지 찾기
                             attributes : [ 'email', 'password', 'name' ],
                             where : { 
                                     'email' :{[Op.like] : email},
@@ -59,16 +59,16 @@ router.post('/join', (req, res) => { // 로그인 시도
     }else{
         console.log(req.body)
         
-        page.create({ // insert 문
+        User.create({ // insert 문
             email : email,
             password : password,
             name : nick,
-        }).then().catch((err) => {
+        }).then(() =>{
+                res.redirect('/') // 성공시
+        }).catch((err) => {
             res.send("<body><p> 회원가입 에러, 이미 사용중인 이메일입니다.</p><p><a href='/join'>돌아가기</a></p> </body>")
         })
     }
-
-    // res.redirect('/')
 })
 
 router.get('/logout', (req, res) => {
