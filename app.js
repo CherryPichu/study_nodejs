@@ -6,14 +6,15 @@ const pageRoute = require('./routes/page')
 const authRoute = require('./routes/auth')
 const { sequelize } = require('./models'); // 모델 불러오기(데이터 베이스 조작)
 const session = require('express-session') // 세션
-
-
-
+const passport = require('passport');
+const passportConfig = require('./passport');
+passportConfig(); // 패스포트 설정
 sequelize.sync({ force : false }).then(() => { // force : true , table 정보가 바뀌면 강제로 삭제뒤 재생성
     console.log('데이터베이스 연결 성공')
 }).catch((err) => {
     console.error(err);
 })
+
 
 
 app.use(session({ // 미들웨어 방식으로 실행
@@ -37,6 +38,11 @@ nunjucks.configure('views', {
     express: app, // app 객체 연결
     watch: true, // true - HTML 파일이 변경될 때 템플릿 엔진을 다시 렌더링함
   });
+
+app.use(passport.initialize()); // 로그인 요청이 올 때마다 passport.deserializerUser를 실행해줌.
+// 요청이 들어오면 id를 이용해 유저의 전체 정보를 복구해준다.
+app.use(passport.session()); // express 세션보다 밑에 있어야하마.
+
 // ---- route 정보------------
 
 app.use('/auth', authRoute)

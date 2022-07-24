@@ -22,6 +22,7 @@ const path = require('path');
 const multer = require('multer') // 사진 업로드 용도
 const fs = require('fs');
 
+
 try {
     fs.readdirSync('uploads')
 }catch(error){
@@ -47,15 +48,18 @@ router.use(cookieParser())
 router.use(bodyParser.json()); // json 등록
 router.use(bodyParser.urlencoded({ extended : false })); // URL-encoded 등록
 
-router.use('/', (req,res,next) =>{
-        next();
-})
 
+router.use((req, res, next) => {
+    res.locals.user = req.user;
+    res.locals.followerCount = 0;
+    res.locals.followingCount = 0;
+    res.locals.followerIdList = [];
+    next();
+});
 
-eval("async function test() { efdsf }")
 // 첫번째 페이지 main.js
 router.get('/', (req, res, next) => {
-        res.render(app.get('views') + "/main.html", { title : "namjung", user :  req.session.user})
+        res.render(app.get('views') + "/main.html", { title : "namjung"})
         // nunjucks에서 req.session.user 객체를 넘겨주면 객체에서 정보를 찾을 수 잇음.
 })
 
@@ -63,16 +67,14 @@ router.get('/main.css', (req, res, next) => {
         res.sendfile('public' + "/main.css")
 })
 
-
-
 // join.html
 router.get('/join', (req, res, next) => {
-        res.render(app.get('views') + "/join.html", { title : "namjung", user :  req.session.user})
+        res.render(app.get('views') + "/join.html", { title : "namjung"})
 })
 
 // profile.html
 router.get('/profile', (req, res, next) => {
-        res.render(app.get('views') + "/profile.html", { title : "namjung", user :  req.session.user})
+        res.render(app.get('views') + "/profile.html", { title : "namjung"})
 })
 
 // image upload
