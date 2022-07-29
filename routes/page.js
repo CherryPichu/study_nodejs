@@ -1,4 +1,5 @@
 const express = require('express')
+const { Post,  User, Hashtag } = require('../models')
 // const session = require('express-session') // 세션
 const cookieParser = require('cookie-parser')// 쿠키
 const bodyParser = require('body-parser'); // Post 요청 방식의 파리미터 정손은
@@ -22,28 +23,6 @@ const path = require('path');
 const multer = require('multer') // 사진 업로드 용도
 const fs = require('fs');
 
-
-try {
-    fs.readdirSync('uploads')
-}catch(error){
-    console.error("uploads 폴더가 없어 uploads 폴더를 생성합니다.")
-    fs.mkdirSync('uploads')
-}
-
-const upload = multer({
-        storage : multer.diskStorage({
-            destination(req, file, done){
-                done(null, 'uploads/')
-            },
-            filename(req, file, done){
-                const ext = path.extname(file.originalname);
-                done(null, path.basename(file.originalname, ext) + req.session.user['name'] +Date.now() + ext);
-            },
-        }),
-        limits : {fileSize : 5 * 1024 * 1024}
- });
-
-
 router.use(cookieParser())
 router.use(bodyParser.json()); // json 등록
 router.use(bodyParser.urlencoded({ extended : false })); // URL-encoded 등록
@@ -51,15 +30,33 @@ router.use(bodyParser.urlencoded({ extended : false })); // URL-encoded 등록
 
 router.use((req, res, next) => {
     res.locals.user = req.user;
-    res.locals.followerCount = 0;
-    res.locals.followingCount = 0;
-    res.locals.followerIdList = [];
+    res.locals.followerCount = req.user ? req.user.Followers.length : 0;
+    res.locals.followingCount = req.user ? req.user.Followings.length : 0;
+    res.locals.followerIdList = req.user ? req.user.Followings.map(f => f.id) : [];
     next();
 });
 
 // 첫번째 페이지 main.js
-router.get('/', (req, res, next) => {
-        res.render(app.get('views') + "/main.html", { title : "namjung"})
+router.get('/', async (req, res, next) => {
+        // res.render(app.get('views') + "/main.html", { title : "namjung"})
+
+        try {
+            const posts = await Post.findAll({
+              include: {
+                model: User,
+                attributes: ['id', 'nick'],
+              },
+              order: [['createdAt', 'DESC']],
+            });
+            res.render('main', {
+              title: 'NodeBird',
+              twits: posts,
+            });
+          } catch (err) {
+            console.error(err);
+            next(err);
+          }
+    
         // nunjucks에서 req.session.user 객체를 넘겨주면 객체에서 정보를 찾을 수 잇음.
 })
 
@@ -77,16 +74,8 @@ router.get('/profile', (req, res, next) => {
         res.render(app.get('views') + "/profile.html", { title : "namjung"})
 })
 
-// image upload
-router.post('/post', upload.single('image'), (req, res) => {
-    console.log(req.file, req.body)
-    res.send('<script>alert("파일 업로드 성공!"); window.location.href = "/"</script>')
-})
 
 
-router.post('/post', upload.none(), (req, res) => {
-    console.log(req.body)
-    res.send('<script>alert("파일 업로드 실패! 파일 없음"); window.location.href = "/"</script>')
-})
+
 
 module.exports = router

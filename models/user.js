@@ -12,26 +12,26 @@ module.exports = class User extends Sequelize.Model {
                 type : Sequelize.STRING(100),
                 allowNull : true, // 카카오톡 로그인은 비밀번호가 없음.
             },
-            name : {
-                type : Sequelize.STRING(50),
-                allowNull : false,
-            },
-            provider : {
-                type : Sequelize.STRING(10),
-                allowNull : false,
-                defaultValue : 'local',
-            },
-            snsId : {
-                type : Sequelize.STRING(30),
-                allowNull : true,
-            }
+            nick: {
+                type: Sequelize.STRING(15),
+                allowNull: false,
+              },
+              provider: {
+                type: Sequelize.STRING(10),
+                allowNull: false,
+                defaultValue: 'local',
+              },
+              snsId: {
+                type: Sequelize.STRING(30),
+                allowNull: true,
+              },
         },
             {
                 sequelize,
-                timestamps : false,
-                underscored : true,
-                modelName : "User",
-                tableName:'USER',
+                timestamps: true,
+                underscored: false,
+                modelName: 'User',
+                tableName: 'users',
                 paranoid : true, // 회원 탈퇴한 회원에 정보를 삭제한 척 해둔다.
                 charset : 'utf8',
                 collate : 'utf8_general_ci',
@@ -52,6 +52,3 @@ module.exports = class User extends Sequelize.Model {
         })
     }
 }
-
-
-

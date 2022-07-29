@@ -1,13 +1,18 @@
+const dotenv = require('dotenv');// .env 파일 데이터 가져오기
+dotenv.config();
 const express = require('express')
 const app = express();
 const path = require('path')
 const nunjucks = require('nunjucks')
-const pageRoute = require('./routes/page')
-const authRoute = require('./routes/auth')
+const pageRouter = require('./routes/page');
+const authRouter = require('./routes/auth');
+const postRouter = require('./routes/post');
+const userRouter = require('./routes/user');
 const { sequelize } = require('./models'); // 모델 불러오기(데이터 베이스 조작)
 const session = require('express-session') // 세션
 const passport = require('passport');
 const passportConfig = require('./passport');
+
 passportConfig(); // 패스포트 설정
 sequelize.sync({ force : false }).then(() => { // force : true , table 정보가 바뀌면 강제로 삭제뒤 재생성
     console.log('데이터베이스 연결 성공')
@@ -17,19 +22,20 @@ sequelize.sync({ force : false }).then(() => { // force : true , table 정보가
 
 
 
-app.use(session({ // 미들웨어 방식으로 실행
-        resave : true,
-        saveUninitialized : true,
-        secret : 'namjung',
-        cookie : {
-                httpOnly : true,
-        },
-        name : 'connect.sid' // 쿠키로 저자될 세션 이름
-}))
+app.use(session({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+    },
+  }));
 
 app.set('port', process.env.PORT || 8082);
 
 app.set('views', path.join(__dirname, 'views')) // 뷰 폴더 정보 지정
+app.use('/img', express.static(path.join(__dirname, 'uploads')));// img -> uploads 로 변환
 app.set('public', path.join(__dirname, 'public'))
 
 // 뷰 엔진 지정
@@ -45,9 +51,10 @@ app.use(passport.session()); // express 세션보다 밑에 있어야하마.
 
 // ---- route 정보------------
 
-app.use('/auth', authRoute)
-
-app.use('/', pageRoute)
+app.use('/', pageRouter);
+app.use('/auth', authRouter);
+app.use('/post', postRouter);
+app.use('/user', userRouter);
 // console.log(pageRoute)
 
 app.use((req, res, next) =>{ // 에러처리 미들웨어

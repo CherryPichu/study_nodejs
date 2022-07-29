@@ -52,5 +52,4 @@ Hashtag.associate(db);
 
 
 
-
 module.exports = db;

@@ -105,7 +105,7 @@ router.post('/join', isNotLoggedIn, async (req, res) => { // 로그인 시도
                 await User.create({ // insert 문
                     email : email, // email만 써도 됨.
                     password : hash,
-                    name : nick,
+                    nick : nick,
                 })
                 return res.redirect('/');
         }catch(err){
@@ -113,6 +113,14 @@ router.post('/join', isNotLoggedIn, async (req, res) => { // 로그인 시도
                 res.send("<body><p> 회원가입 에러, 이미 사용중인 이메일입니다.</p><p><a href='/join'>돌아가기</a></p> </body>")
         }
     }
+})
+
+router.get('/kakao', passport.authenticate('kakao'))
+
+router.get('/kakao/callback', passport.authenticate('kakao',{
+        failureRedirect : "/",
+}), (req, res) => {
+        res.redirect('/')
 })
 
 router.get('/logout', (req, res) => {
