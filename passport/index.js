@@ -17,7 +17,17 @@ module.exports = () => {
     // { id : 3, 'connect.sid' : s%31565453254} , id와 세션쿠키가 메모리에 저장된다.
 
     passport.deserializeUser((id, done) => {// 3번 사용자의 아이디로 필요한 정보를 복구해준다.
-        User.findOne({ where : { id }})
+        User.findOne({ where : { id },
+        include: [{
+            model: User,
+            attributes: ['id', 'nick'],
+            as: 'Followers',
+          }, {
+            model: User,
+            attributes: ['id', 'nick'],
+            as: 'Followings',
+          }]
+        })
         .then(user => done(null, user)) // req.user 으로 사용자 정보를 볼 수 있음., req.isAturhenticated() == true
         .catch(err => done(err))
     })

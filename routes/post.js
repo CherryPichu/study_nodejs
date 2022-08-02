@@ -42,7 +42,27 @@ router.post('/img',isLoggedIn, upload.single('img'), (req, res) => { // input id
 
 router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
     try {
-        console.log(req.user);
+        // 해시태그 꺼내기 => 정규 표현식
+        const hashtags = req.body.content.match(/#[^\s#]/); // #으로 시작해서 띄어쓰기와 #이 아닌 애들을 골라라.
+        // Set으로 중복 제거.
+        // [#노드, #익스프레스]
+        // Map <= [노드, 익스프레스]
+        // [findOrCreate(노드), findOrcreate(익스프레스)]
+        // [ [해시태그, false], [해시태그, true] ] true면 create 한거 false면 find한거
+        if(hashtags) {
+            const requres = await Promise.all(
+                hashtags.map(tag => {
+                    return Hashtag.findOrCreate({
+                        where : {title : tag.slice(1).toLowerCase() },
+                    })
+                })
+            )
+            console.log("requres : ",requres.dataValue)
+            // await post.addHashtags(requres.map(r => r[0]))
+        }
+        
+
+        // console.log(req.user);
         const post = await Post.create({
           content: req.body.content,
           img: req.body.url,
